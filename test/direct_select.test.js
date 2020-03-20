@@ -273,6 +273,22 @@ test('direct_select', (t) => {
     });
   });
 
+  t.test('direct_select - clicking an inactive feature should select it', (st) => {
+    const [lineId] = Draw.add(getGeoJSON('line'));
+    const [polygonId] = Draw.add(getGeoJSON('polygon'));
+    Draw.changeMode(Constants.modes.DIRECT_SELECT, {
+      featureId: lineId
+    });
+    const clickAt = getGeoJSON('polygon').geometry.coordinates[0][0];
+    afterNextRender(() => {
+      click(map, makeMouseEvent(clickAt[0], clickAt[1]));
+      afterNextRender(() => {
+        t.equal(Draw.getSelectedIds().indexOf(polygonId) !== -1, true, 'polygon is now selected');
+        cleanUp(() => st.end());
+      });
+    });
+  });
+
   document.body.removeChild(mapContainer);
   t.end();
 });

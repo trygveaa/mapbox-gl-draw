@@ -98,8 +98,9 @@ DirectSelect.clickNoTarget = function () {
   this.changeMode(Constants.modes.SIMPLE_SELECT);
 };
 
-DirectSelect.clickInactive = function () {
-  this.changeMode(Constants.modes.SIMPLE_SELECT);
+DirectSelect.clickInactive = function (state, e) {
+  const featureId = e.featureTarget.properties.id;
+  this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [featureId] });
 };
 
 DirectSelect.clickActiveFeature = function (state) {
