@@ -1,7 +1,7 @@
 /* eslint no-shadow:[0] */
 import turfCentroid from '@turf/centroid';
 import test from 'tape';
-import MapboxDraw from '../';
+import MapboxDraw from '../index';
 import click from './utils/mouse_click';
 import tap from './utils/touch_tap';
 import getGeoJSON from './utils/get_geojson';
@@ -148,6 +148,19 @@ test('direct_select', (t) => {
     });
   });
 
+  t.test('direct_select - trashing with no vertices selected should delete the feature', (st) => {
+    const ids = Draw.add(getGeoJSON('polygon'));
+    Draw.changeMode(Constants.modes.DIRECT_SELECT, {
+      featureId: ids[0]
+    });
+    afterNextRender(() => {
+      Draw.trash();
+      const afterTrash = Draw.get(ids[0]);
+      st.equal(afterTrash, undefined);
+      cleanUp(() => st.end());
+    });
+  });
+
   t.test('direct_select - a click on a vertex and than dragging the map shouldn\'t drag the vertex', (st) => {
     const ids = Draw.add(getGeoJSON('polygon'));
     Draw.changeMode(Constants.modes.DIRECT_SELECT, {
@@ -246,6 +259,22 @@ test('direct_select', (t) => {
       st.equal(afterMove.geometry.coordinates[0][1][1], startPosition[1] + 15, 'point lat moved to the mouseup location');
 
       cleanUp(() => st.end());
+    });
+  });
+
+  t.test('direct_select - clicking an inactive feature should select it', (st) => {
+    const [lineId] = Draw.add(getGeoJSON('line'));
+    const [polygonId] = Draw.add(getGeoJSON('polygon'));
+    Draw.changeMode(Constants.modes.DIRECT_SELECT, {
+      featureId: lineId
+    });
+    const clickAt = getGeoJSON('polygon').geometry.coordinates[0][0];
+    afterNextRender(() => {
+      click(map, makeMouseEvent(clickAt[0], clickAt[1]));
+      afterNextRender(() => {
+        t.equal(Draw.getSelectedIds().indexOf(polygonId) !== -1, true, 'polygon is now selected');
+        cleanUp(() => st.end());
+      });
     });
   });
 
