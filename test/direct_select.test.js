@@ -249,6 +249,22 @@ test('direct_select', (t) => {
     });
   });
 
+  t.test('direct_select - clicking an inactive feature should select it', (st) => {
+    const [lineId] = Draw.add(getGeoJSON('line'));
+    const [polygonId] = Draw.add(getGeoJSON('polygon'));
+    Draw.changeMode(Constants.modes.DIRECT_SELECT, {
+      featureId: lineId
+    });
+    const clickAt = getGeoJSON('polygon').geometry.coordinates[0][0];
+    afterNextRender(() => {
+      click(map, makeMouseEvent(clickAt[0], clickAt[1]));
+      afterNextRender(() => {
+        t.equal(Draw.getSelectedIds().indexOf(polygonId) !== -1, true, 'polygon is now selected');
+        cleanUp(() => st.end());
+      });
+    });
+  });
+
   t.test('direct_select - dragging a selected vertex updates stored coordinates', (st) => {
     const [lineId] = Draw.add(getGeoJSON('line'));
     Draw.changeMode(Constants.modes.DIRECT_SELECT, {
@@ -268,22 +284,6 @@ test('direct_select', (t) => {
       map.fire('mouseup', makeMouseEvent(endPosition[0], endPosition[1]));
       afterNextRender(() => {
         st.deepEqual(Draw.getSelectedPoints().features[0].geometry.coordinates, endPosition, 'selection is accurate after dragging');
-        cleanUp(() => st.end());
-      });
-    });
-  });
-
-  t.test('direct_select - clicking an inactive feature should select it', (st) => {
-    const [lineId] = Draw.add(getGeoJSON('line'));
-    const [polygonId] = Draw.add(getGeoJSON('polygon'));
-    Draw.changeMode(Constants.modes.DIRECT_SELECT, {
-      featureId: lineId
-    });
-    const clickAt = getGeoJSON('polygon').geometry.coordinates[0][0];
-    afterNextRender(() => {
-      click(map, makeMouseEvent(clickAt[0], clickAt[1]));
-      afterNextRender(() => {
-        t.equal(Draw.getSelectedIds().indexOf(polygonId) !== -1, true, 'polygon is now selected');
         cleanUp(() => st.end());
       });
     });
